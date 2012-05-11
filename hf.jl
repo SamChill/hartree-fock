@@ -240,10 +240,10 @@ function hartree_fock(R, Z)
     #calculate all of the two-electron integrals
     K = length(phi)
     two_electron = zeros(K,K,K,K)
-    for mu = 1:2
-        for v = 1:2
-            for lambda = 1:2
-                for sigma = 1:2
+    for mu = 1:K
+        for v = 1:K
+            for lambda = 1:K
+                for sigma = 1:K
                     coulomb  = two_electron_integral(phi[mu], phi[v], 
                                                      phi[sigma], phi[lambda])
                     two_electron[mu,v,sigma,lambda] = coulomb
@@ -266,10 +266,11 @@ function hartree_fock(R, Z)
     for scf_iter = 1:100
         #calculate the two electron part of the Fock matrix
         G = zeros(size(Hcore))
-        for mu = 1:2
-            for v = 1:2
-                for lambda = 1:2
-                    for sigma = 1:2
+        K = length(phi)
+        for mu = 1:K
+            for v = 1:K
+                for lambda = 1:K
+                    for sigma = 1:K
                         coulomb  = two_electron[mu,v,sigma,lambda]
                         exchange = two_electron[mu,lambda,sigma,v]
                         G[mu,v] += P[lambda,sigma]*(coulomb - 0.5*exchange)
