@@ -172,29 +172,20 @@ function four_center_contraction(b1::STONG, b2::STONG, b3::STONG, b4::STONG,
  end
 
 
-function hartree_fock(R2, P)
-    R1 = 0.0
-    R = [R1, R2]
-    R12 = abs(R2-R1)
-
-    Z1 = 2
-    Z2 = 1
-    Z = [Z1, Z2]
-
+function hartree_fock(R, Z)
     #println("constructing basis set")
-    phi1 = sto3g_helium(R1)
-    phi2 = sto3g_hydrogen(R2)
-    phi = [phi1, phi2]
+    phi = Array(BasisFunction, length(Z))
+    for A = 1:length(Z)
+        if Z[A] == 1
+            phi[A] = sto3g_hydrogen(R[A])
+        elseif Z[A] == 2
+            phi[A] = sto3g_helium(R[A])
+        end
+    end
     #calculate the overlap matrix S
     #the matrix should be symmetric with diagonal entries equal to one
     #println("building overlap matrix")
-    S = eye(2)
-    S[1,2] = overlap_integral(phi1, phi2)
-
-    #calculate the overlap matrix S
-    #the matrix should be symmetric with diagonal entries equal to one
-    #println("building overlap matrix")
-    S = eye(2)
+    S = eye(length(phi))
     for i = 1:length(phi)
         for j = (i+1):length(phi)
             S[i,j] = S[j,i] = overlap_integral(phi[i], phi[j])
@@ -206,7 +197,7 @@ function hartree_fock(R2, P)
 
     #calculate the kinetic energy matrix T
     #println("building kinetic energy matrix")
-    T = zeros(2,2) 
+    T = zeros(length(phi), length(phi))
     for i = 1:length(phi)
         for j = i:length(phi)
             T[i,j] = T[j,i] = kinetic_energy_integral(phi[i], phi[j])
@@ -265,6 +256,8 @@ function hartree_fock(R2, P)
             end
         end
     end
+
+    P = zeros(K,K)
 
     total_energy = 0.0
     old_energy = 0.0
@@ -334,14 +327,13 @@ function hartree_fock(R2, P)
         old_energy = total_energy
     end
 
-    printf("r12: %.4f e_tot: %12.8f e_elec: %12.8f\n", R12, total_energy, 
-           electronic_energy)
+    #printf("r12: %.4f e_tot: %12.8f e_elec: %12.8f\n", R12, total_energy, 
+    #       electronic_energy)
 
-    return total_energy, electronic_energy, P
+    return total_energy, electronic_energy
 end
 
-P = zeros(2,2)
-total_energy, electronic_energy, P = hartree_fock(1.4632, P)
+total_energy, electronic_energy = hartree_fock([0, 1.4632], [2, 1])
 szabo_energy = -4.227529
 if abs(electronic_energy - szabo_energy) > 1e-6
     println("TEST FAILED")
