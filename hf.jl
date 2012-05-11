@@ -263,6 +263,7 @@ function hartree_fock(R, Z)
     old_energy = 0.0
     electronic_energy = 0.0
 
+    printf("%4s %13s de\n", "iter", "total energy")
     for scf_iter = 1:100
         #calculate the two electron part of the Fock matrix
         G = zeros(size(Hcore))
@@ -299,8 +300,7 @@ function hartree_fock(R, Z)
         electronic_energy *= 0.5
         #println("E_elec: $electronic_energy")
         total_energy = electronic_energy + nuclear_energy
-        printf("SCF i: %3i E_elec: %12.8f E_total: %12.8f de: %12.4e\n", 
-               scf_iter, electronic_energy, total_energy, 
+        printf("%3i %12.8f %12.4e\n", scf_iter, total_energy, 
                total_energy - old_energy)
 
         if scf_iter > 2 && abs(old_energy - total_energy) < 1e-6
@@ -328,16 +328,36 @@ function hartree_fock(R, Z)
         old_energy = total_energy
     end
 
-    #printf("r12: %.4f e_tot: %12.8f e_elec: %12.8f\n", R12, total_energy, 
-    #       electronic_energy)
-
     return total_energy, electronic_energy
 end
 
-total_energy, electronic_energy = hartree_fock([0, 1.4632], [2, 1])
-szabo_energy = -4.227529
-if abs(electronic_energy - szabo_energy) > 1e-6
-    println("TEST FAILED")
-else
-    println("TEST PASSED")
+function test_h2()
+    println("TESTING H2")
+    et, ee   = hartree_fock([0, 1.4], [1, 1])
+    szabo_energy = -1.8310
+    if abs(ee - szabo_energy) > 1e-6
+        println("TEST FAILED")
+    else
+        println("TEST PASSED")
+    end
+
 end
+
+function test_heh()
+    println("TESTING HEH+")
+    total_energy, electronic_energy = hartree_fock([0, 1.4632], [2, 1])
+    szabo_energy = -4.227529
+    if abs(electronic_energy - szabo_energy) > 1e-6
+        println("TEST FAILED")
+    else
+        println("TEST PASSED")
+    end
+
+end
+
+function tests()
+    test_h2()
+    test_heh()
+end
+
+tests()
