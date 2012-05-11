@@ -333,9 +333,9 @@ end
 
 function test_h2()
     println("TESTING H2")
-    et, ee   = hartree_fock([0, 1.4], [1, 1])
+    total_energy, electronic_energy = hartree_fock([0., 1.4], [1, 1])
     szabo_energy = -1.8310
-    if abs(ee - szabo_energy) > 1e-6
+    if abs(electronic_energy - szabo_energy) > 1e-6
         println("TEST FAILED")
     else
         println("TEST PASSED")
@@ -345,7 +345,7 @@ end
 
 function test_heh()
     println("TESTING HEH+")
-    total_energy, electronic_energy = hartree_fock([0, 1.4632], [2, 1])
+    total_energy, electronic_energy = hartree_fock([0., 1.4632], [2, 1])
     szabo_energy = -4.227529
     if abs(electronic_energy - szabo_energy) > 1e-6
         println("TEST FAILED")
@@ -355,9 +355,20 @@ function test_heh()
 
 end
 
+function heh_pes()
+    file = open("heh_pes.dat", "w")
+    energy_he, energy_he = hartree_fock([0.0], [2])
+    for r in linspace(0.7, 3.5, 25)
+        total_energy, electronic_energy = hartree_fock([0., r], [2, 1])
+        write(file, "$r $(total_energy - energy_he)\n")
+    end
+    close(file)
+end
+
 function tests()
     test_h2()
     test_heh()
 end
 
 tests()
+heh_pes()
